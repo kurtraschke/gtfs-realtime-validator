@@ -236,3 +236,9 @@ See:
 ### E022 - trip `stop_time_update` times are not increasing
 
 Sequential `stop_time_update` arrival/departure times should increase - they should never be the same or decrease between two sequential stops.  Within the same `stop_time_update`, arrival and departures times can be the same, or the departure time can be later than the arrival time - the departure time should never come before the arrival time.
+
+<a name="E023"/>
+
+### E023 - `start_time` does not match GTFS initial `arrival_time`
+
+For normal scheduled trips (i.e., not defined in `frequencies.txt`), the GTFS-realtime trip `start_time` must match the initial `arrival_time` in `stop_times.txt` for this trip.

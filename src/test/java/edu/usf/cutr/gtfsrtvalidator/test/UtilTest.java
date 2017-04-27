@@ -20,7 +20,6 @@ import edu.usf.cutr.gtfsrtvalidator.api.model.MessageLogModel;
 import edu.usf.cutr.gtfsrtvalidator.api.model.OccurrenceModel;
 import edu.usf.cutr.gtfsrtvalidator.helper.ErrorListHelperModel;
 import edu.usf.cutr.gtfsrtvalidator.test.util.TestUtils;
-import edu.usf.cutr.gtfsrtvalidator.util.GtfsUtils;
 import edu.usf.cutr.gtfsrtvalidator.util.TimestampUtils;
 import edu.usf.cutr.gtfsrtvalidator.validation.ValidationRules;
 import org.junit.Test;
@@ -87,43 +86,43 @@ public class UtilTest {
          * Good dates
          */
         String validDate = "20170101";
-        assertEquals(true, GtfsUtils.isValidDateFormat(validDate));
+        assertEquals(true, TimestampUtils.isValidDateFormat(validDate));
 
         validDate = "20170427";
-        assertEquals(true, GtfsUtils.isValidDateFormat(validDate));
+        assertEquals(true, TimestampUtils.isValidDateFormat(validDate));
 
         /**
          * Bad dates
          */
         String badDate = "2017011";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "2017/01/01";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "01/01/2017";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "01-01-2017";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "01012017";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "13012017";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "20171301";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "abcdefgh";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "12345678";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
 
         badDate = "2017.01.01";
-        assertEquals(false, GtfsUtils.isValidDateFormat(badDate));
+        assertEquals(false, TimestampUtils.isValidDateFormat(badDate));
     }
 
     @Test
@@ -132,42 +131,56 @@ public class UtilTest {
          * Good times
          */
         String validTime = "00:00:00";
-        assertEquals(true, GtfsUtils.isValidTimeFormat(validTime));
+        assertEquals(true, TimestampUtils.isValidTimeFormat(validTime));
 
         validTime = "02:15:35";
-        assertEquals(true, GtfsUtils.isValidTimeFormat(validTime));
+        assertEquals(true, TimestampUtils.isValidTimeFormat(validTime));
 
         validTime = "22:15:35";
-        assertEquals(true, GtfsUtils.isValidTimeFormat(validTime));
+        assertEquals(true, TimestampUtils.isValidTimeFormat(validTime));
 
         // Time can exceed 24 hrs if service goes into the next service day
         validTime = "25:15:35";
-        assertEquals(true, GtfsUtils.isValidTimeFormat(validTime));
+        assertEquals(true, TimestampUtils.isValidTimeFormat(validTime));
 
         // Time can exceed 24 hrs if service goes into the next service day
         validTime = "29:15:35";
-        assertEquals(true, GtfsUtils.isValidTimeFormat(validTime));
+        assertEquals(true, TimestampUtils.isValidTimeFormat(validTime));
 
         /**
          * Bad times
          */
         String badTime = "5:15:35";
-        assertEquals(false, GtfsUtils.isValidTimeFormat(badTime));
+        assertEquals(false, TimestampUtils.isValidTimeFormat(badTime));
 
         // Anything of 29hrs will currently fail validation
         badTime = "30:15:35";
-        assertEquals(false, GtfsUtils.isValidTimeFormat(badTime));
+        assertEquals(false, TimestampUtils.isValidTimeFormat(badTime));
 
         badTime = "12345678";
-        assertEquals(false, GtfsUtils.isValidTimeFormat(badTime));
+        assertEquals(false, TimestampUtils.isValidTimeFormat(badTime));
 
         badTime = "abcdefgh";
-        assertEquals(false, GtfsUtils.isValidTimeFormat(badTime));
+        assertEquals(false, TimestampUtils.isValidTimeFormat(badTime));
 
         badTime = "05:5:35";
-        assertEquals(false, GtfsUtils.isValidTimeFormat(badTime));
+        assertEquals(false, TimestampUtils.isValidTimeFormat(badTime));
 
         badTime = "05:05:5";
-        assertEquals(false, GtfsUtils.isValidTimeFormat(badTime));
+        assertEquals(false, TimestampUtils.isValidTimeFormat(badTime));
+    }
+
+    @Test
+    public void testSecondsAfterMidnightToClock() {
+        int time = 21600;  // Seconds after midnight
+        String clockTime = TimestampUtils.secondsAfterMidnightToClock(time);
+        assertEquals("06:00:00", clockTime);
+    }
+
+    @Test
+    public void testPosixToClock() {
+        int time = 1493330656;  // POSIX time
+        String clockTime = TimestampUtils.posixToClock(time);
+        assertEquals("22:04:15", clockTime);
     }
 }
