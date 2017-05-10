@@ -17,6 +17,10 @@
 
 package edu.usf.cutr.gtfsrtvalidator.background;
 
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
+import org.locationtech.spatial4j.shape.Rectangle;
+import org.locationtech.spatial4j.shape.Shape;
+import org.locationtech.spatial4j.shape.ShapeFactory;
 import org.onebusaway.gtfs.impl.GtfsDaoImpl;
 import org.onebusaway.gtfs.model.*;
 import org.slf4j.LoggerFactory;
@@ -44,6 +48,8 @@ public class GtfsMetadata {
     private Set<String> mExactTimesZeroTripIds = new HashSet<>();
     // Maps trip_id to a list of Frequency objects
     private Map<String, List<Frequency>> mExactTimesOneTrips = new HashMap<>();
+    // A geographic bounding box that includes all the stops from GTFS stops.txt
+    Rectangle mStopBoundingBox;
 
     /**
      * key is stops.txt stop_id, value is stops.txt location_type
@@ -94,12 +100,19 @@ public class GtfsMetadata {
             }
         }
 
+        ShapeFactory sf = JtsSpatialContext.GEO.getShapeFactory();
+        ShapeFactory.MultiPointBuilder builder = sf.multiPoint();
+
         // Create a set of stop_ids from the GTFS feeds stops.txt, and store their location_type in a map
         Collection<Stop> stops = gtfsData.getAllStops();
         for (Stop stop : stops) {
             mStopIds.add(stop.getId().getId());
             mStopToLocationTypeMap.put(stop.getId().getId(), stop.getLocationType());
+            builder.pointXY(stop.getLon(), stop.getLat());
         }
+
+        Shape shape = builder.build();
+        mStopBoundingBox = shape.getBoundingBox();
 
         // Create a set of all exact_times=0 trips
         Collection<Frequency> frequencies = gtfsData.getAllFrequencies();
@@ -174,5 +187,14 @@ public class GtfsMetadata {
      */
     public TimeZone getTimeZone() {
         return mTimeZone;
+    }
+
+    /**
+     * Returns a geographic bounding box for the stop locations from GTFS stops.txt
+     *
+     * @return a geographic bounding box for the stop locations from GTFS stops.txt
+     */
+    public Rectangle getStopBoundingBox() {
+        return mStopBoundingBox;
     }
 }

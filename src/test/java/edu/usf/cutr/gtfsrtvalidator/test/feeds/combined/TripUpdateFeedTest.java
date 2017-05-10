@@ -25,9 +25,15 @@ import edu.usf.cutr.gtfsrtvalidator.validation.entity.StopTimeSequenceValidator;
 import edu.usf.cutr.gtfsrtvalidator.validation.entity.VehicleValidator;
 import edu.usf.cutr.gtfsrtvalidator.validation.gtfs.StopLocationTypeValidator;
 import org.junit.Test;
+import org.locationtech.spatial4j.context.SpatialContext;
+import org.locationtech.spatial4j.shape.Point;
+import org.locationtech.spatial4j.shape.Rectangle;
+import org.locationtech.spatial4j.shape.ShapeFactory;
+import org.locationtech.spatial4j.shape.SpatialRelation;
 
 import static edu.usf.cutr.gtfsrtvalidator.util.TimestampUtils.MIN_POSIX_TIME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /* 
  * Tests all the warnings and rules that validate TripUpdate feed.
@@ -348,5 +354,32 @@ public class TripUpdateFeedTest extends FeedMessageTest {
         TestUtils.assertResults(ValidationRules.E010, results, 1);
 
         clearAndInitRequiredFeedFields();
+    }
+
+
+    @Test
+    public void testGeographicBounds() {
+        Rectangle r = bullRunnerGtfsMetadata.getStopBoundingBox();
+        ShapeFactory sf = SpatialContext.GEO.getShapeFactory();
+        Point p;
+        SpatialRelation spatialRelation;
+
+        /**
+         * Point is inside GTFS stops.txt bounding box
+         */
+        p = sf.pointXY(-82.4139, 28.0587); // USF Campus in Tampa, FL
+        spatialRelation = r.relate(p);
+        assertEquals(SpatialRelation.CONTAINS, spatialRelation);
+
+        /**
+         * Point is outside of GTFS stops.txt bounding box
+         */
+        p = sf.pointXY(-82.4655826, 27.9482837); // Downtown Tampa, FL
+        spatialRelation = r.relate(p);
+        assertNotEquals(SpatialRelation.CONTAINS, spatialRelation);
+
+        p = sf.pointXY(-74.0059, 40.7128); // NYC
+        spatialRelation = r.relate(p);
+        assertNotEquals(SpatialRelation.CONTAINS, spatialRelation);
     }
 }
